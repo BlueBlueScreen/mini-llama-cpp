@@ -1,0 +1,16 @@
+# Build directories
+build*/
+cmake-build-*/
+out/
+
+# Downloaded checkpoints (the small GQA demo model is committed)
+models/*
+!models/stories260K.bin
+!models/tok512.bin
+
+# Editor / tooling
+.cache/
+compile_commands.json
+.vscode/
+.idea/
+*.swp

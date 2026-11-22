@@ -1,0 +1,57 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: gcc-release
+            cc: gcc
+            cxx: g++
+            build_type: Release
+            openmp: OFF
+            sanitizers: OFF
+          - name: clang-release
+            cc: clang
+            cxx: clang++
+            build_type: Release
+            openmp: OFF
+            sanitizers: OFF
+          - name: gcc-openmp
+            cc: gcc
+            cxx: g++
+            build_type: Release
+            openmp: ON
+            sanitizers: OFF
+          - name: gcc-sanitizers
+            cc: gcc
+            cxx: g++
+            build_type: Debug
+            openmp: OFF
+            sanitizers: ON
+    name: ${{ matrix.name }}
+    env:
+      CC: ${{ matrix.cc }}
+      CXX: ${{ matrix.cxx }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure
+        run: >
+          cmake -S . -B build
+          -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+          -DMINI_LLAMA_ENABLE_OPENMP=${{ matrix.openmp }}
+          -DMINI_LLAMA_ENABLE_SANITIZERS=${{ matrix.sanitizers }}
+
+      - name: Build
+        run: cmake --build build -j "$(nproc)"
+
+      - name: Test
+        run: ctest --test-dir build --output-on-failure
